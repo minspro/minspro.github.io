@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   
   
-    <meta name="keywords" content="滕王阁序,王勃,初唐四杰,">
+    <meta name="keywords" content="python, aiohttp, mitmproxy,">
   
   
-    <meta name="description" content="情由景生，写景是为抒情、景、情相互渗透，水乳交融。浑然天成，恰似行云流水，挥洒自如，自然流畅。">
+    <meta name="description" content="基于 Python 和 aiohttp 构建的异步 HTTP/HTTPS 代理服务器，支持请求转发与响应回传，适用于高并发网络场景。">
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <title>滕王阁序 |  敏思信息</title>
+  <title>基于python+aiohttp的web代理服务器 |  敏思信息</title>
   
     <link rel="apple-touch-icon" sizes="57x57" href="/images/webclip/apple-touch-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/images/webclip/apple-touch-icon-72x72.png">
@@ -95,13 +95,13 @@
       
   
     <h1 class="article-title" itemprop="name">
-      滕王阁序
+      基于python+aiohttp的web代理服务器
     </h1>
   
 
       <div class="article-meta">
-        <time class="text-gray" datetime="2012-12-20T18:00:00.000Z" itemprop="datePublished">
-  2012-12-21
+        <time class="text-gray" datetime="2025-04-29T02:00:00.000Z" itemprop="datePublished">
+  2025-04-29
 </time>
         
       </div>
@@ -109,23 +109,21 @@
     </header>
     
     <div class="article-entry" itemprop="articleBody">
-      <p>王勃（约650-676年），唐代诗人。汉族，字子安。绛州龙门(今山西河津)人。王勃与杨炯、卢照邻、骆宾王齐名，世称“初唐四杰”，其中王勃是“初唐四杰”之首。</p>
+      <p>在现代网络编程中，异步I&#x2F;O越来越受到开发者的青睐，因为它可以在执行I&#x2F;O操作（如网络请求）时避免阻塞程序的主线程，从而提高应用的响应性和效率。Python中的aiohttp库就是一个支持异步HTTP客户端&#x2F;服务器编程的强大工具。下面介绍的是一个基于Python和aiohttp构建的简单HTTP&#x2F;HTTPS代理服务器案例。</p>
 <span id="more"></span>
 
 <hr>
-<p>豫章故郡，洪都新府。星分翼轸，地接衡庐。襟三江而带五湖，控蛮荆而引瓯越。物华天宝，龙光射牛斗之墟；人杰地灵，徐孺下陈蕃之榻。雄州雾列，俊采星驰。台隍枕夷夏之交，宾主尽东南之美。都督阎公之雅望，棨戟遥临；宇文新州之懿范，襜帷暂驻。十旬休假，胜友如云；千里逢迎，高朋满座。腾蛟起凤，孟学士之词宗；紫电青霜，王将军之武库。家君作宰，路出名区；童子何知，躬逢胜饯。</p>
-<p>时维九月，序属三秋。潦水尽而寒潭清，烟光凝而暮山紫。俨骖騑于上路，访风景于崇阿；临帝子之长洲，得天人之旧馆。层峦耸翠，上出重霄；飞阁流丹，下临无地。鹤汀凫渚，穷岛屿之萦回；桂殿兰宫，即冈峦之体势。</p>
-<p>披绣闼，俯雕甍，山原旷其盈视，川泽纡其骇瞩。闾阎扑地，钟鸣鼎食之家；舸舰弥津，青雀黄龙之舳。云销雨霁，彩彻区明。落霞与孤鹜齐飞，秋水共长天一色。渔舟唱晚，响穷彭蠡之滨；雁阵惊寒，声断衡阳之浦。</p>
-<p>遥襟甫畅，逸兴遄飞。爽籁发而清风生，纤歌凝而白云遏。睢园绿竹，气凌彭泽之樽；邺水朱华，光照临川之笔。四美具，二难并。穷睇眄于中天，极娱游于暇日。天高地迥，觉宇宙之无穷；兴尽悲来，识盈虚之有数。望长安于日下，目吴会于云间。地势极而南溟深，天柱高而北辰远。关山难越，谁悲失路之人？萍水相逢，尽是他乡之客。怀帝阍而不见，奉宣室以何年？</p>
-<p>嗟乎！时运不齐，命途多舛。冯唐易老，李广难封。屈贾谊于长沙，非无圣主；窜梁鸿于海曲，岂乏明时？所赖君子见机，达人知命。老当益壮，宁移白首之心？穷且益坚，不坠青云之志。酌贪泉而觉爽，处涸辙以犹欢。北海虽赊，扶摇可接；东隅已逝，桑榆非晚。孟尝高洁，空余报国之情；阮籍猖狂，岂效穷途之哭！</p>
-<p>勃，三尺微命，一介书生。无路请缨，等终军之弱冠；有怀投笔，慕宗悫之长风。舍簪笏于百龄，奉晨昏于万里。非谢家之宝树，接孟氏之芳邻。他日趋庭，叨陪鲤对；今兹捧袂，喜托龙门。杨意不逢，抚凌云而自惜；钟期既遇，奏流水以何惭？</p>
-<p>呜乎！胜地不常，盛筵难再；兰亭已矣，梓泽丘墟。临别赠言，幸承恩于伟饯；登高作赋，是所望于群公。敢竭鄙怀，恭疏短引；一言均赋，四韵俱成。请洒潘江，各倾陆海云尔：</p>
-<p>滕王高阁临江渚，佩玉鸣鸾罢歌舞。<br>画栋朝飞南浦云，珠帘暮卷西山雨。<br>闲云潭影日悠悠，物换星移几度秋。<br>阁中帝子今何在？槛外长江空自流。</p>
+<p>在现代网络编程中，异步I&#x2F;O越来越受到开发者的青睐，因为它可以在执行I&#x2F;O操作（如网络请求）时避免阻塞程序的主线程，从而提高应用的响应性和效率。Python中的aiohttp库就是一个支持异步HTTP客户端&#x2F;服务器编程的强大工具。下面介绍的是一个基于Python和aiohttp构建的简单HTTP&#x2F;HTTPS代理服务器案例。</p>
+<p>首先，开发者需要安装aiohttp库，可以通过pip命令进行安装：pip install aiohttp。</p>
+<p>接下来是编写代理服务器的核心代码。在这个案例中，我们将创建一个异步函数来处理客户端连接，接收客户端发送的请求，并将这个请求转发到目标服务器。一旦从目标服务器收到响应，代理服务器会将该响应返回给最初的客户端。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> aiohttp</span><br><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">proxy_handler</span>(<span class="params">request</span>):</span><br><span class="line">    <span class="comment"># 获取客户端请求的目标URL</span></span><br><span class="line">    url = request.url.with_scheme(<span class="string">&#x27;https&#x27;</span> <span class="keyword">if</span> request.secure <span class="keyword">else</span> <span class="string">&#x27;http&#x27;</span>).human_repr()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 创建一个新的请求到目标服务器</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> aiohttp.ClientSession() <span class="keyword">as</span> session:</span><br><span class="line">        <span class="keyword">async</span> <span class="keyword">with</span> session.request(</span><br><span class="line">            method=request.method,</span><br><span class="line">            url=url,</span><br><span class="line">            headers=<span class="built_in">dict</span>(request.headers),</span><br><span class="line">            data=<span class="keyword">await</span> request.read()</span><br><span class="line">        ) <span class="keyword">as</span> resp:</span><br><span class="line">            <span class="comment"># 构建响应以返回给客户端</span></span><br><span class="line">            response = web.StreamResponse(headers=resp.headers)</span><br><span class="line">            <span class="keyword">await</span> response.prepare(request)</span><br><span class="line">            <span class="comment"># 将数据流从目标服务器传输回客户端</span></span><br><span class="line">            <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                chunk = <span class="keyword">await</span> resp.content.read(<span class="number">1024</span>)</span><br><span class="line">                <span class="keyword">if</span> <span class="keyword">not</span> chunk:</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                <span class="keyword">await</span> response.write(chunk)</span><br><span class="line">            <span class="keyword">return</span> response</span><br><span class="line"></span><br><span class="line">app = web.Application()</span><br><span class="line"><span class="comment"># 配置路由，所有请求都由proxy_handler处理</span></span><br><span class="line">app.router.add_route(<span class="string">&#x27;*&#x27;</span>, <span class="string">&#x27;/&#123;path:.*&#125;&#x27;</span>, proxy_handler)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 运行代理服务器</span></span><br><span class="line">web.run_app(app, host=<span class="string">&#x27;localhost&#x27;</span>, port=<span class="number">8080</span>)</span><br></pre></td></tr></table></figure>
+<p>这段代码实现了一个简单的HTTP&#x2F;HTTPS代理服务器，监听本地的8080端口。无论客户端发起的是HTTP还是HTTPS请求，都会被代理服务器接收，并通过proxy_handler函数转发给目标服务器。aiohttp的异步特性使得这个过程非常高效，即使面对大量的并发请求也能保持良好的性能表现。</p>
+<p>请注意，这只是一个基本示例，实际应用中可能还需要考虑更多的细节，比如错误处理、超时控制、安全问题等。此外，对于HTTPS流量，通常还需要处理SSL&#x2F;TLS证书相关的逻辑，以确保通信的安全性。</p>
 
     </div>
     <footer class="article-footer">
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%BB%95%E7%8E%8B%E9%98%81%E5%BA%8F/" rel="tag">滕王阁序</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python-aiohttp/" rel="tag">python, aiohttp</a></li></ul>
 
     </footer>
   </div>
@@ -134,19 +132,10 @@
     
 <nav class="article-nav pt-4 mt-3" id="article-nav">
   
-    <a href="/2012/12/21/xiaoyaoyou/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">前一篇</strong>
-      <div class="article-nav-title">
-        
-          逍遥游
-        
-      </div>
-    </a>
   
-  
-    <a href="/2012/12/21/lantingjixu/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2012/12/21/yueyanglouji/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">后一篇</strong>
-      <div class="article-nav-title">兰亭集序</div>
+      <div class="article-nav-title">岳阳楼记</div>
     </a>
   
 </nav>
