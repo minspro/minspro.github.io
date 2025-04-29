@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  
+    <meta name="keywords" content="suricata, oracle, mysql, postgresql,">
+  
+  
+    <meta name="description" content="敏思信息">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>基于 Suricata 的数据库流量审计系统设计与实践 |  敏思信息</title>
+  
+    <link rel="apple-touch-icon" sizes="57x57" href="/images/webclip/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/images/webclip/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/images/webclip/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/images/webclip/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/images/webclip/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/images/webclip/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/webclip/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/webclip/apple-touch-icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/images/webclip/apple-touch-icon-167x167.png">
+  
+  
+    <link rel="shortcut icon" href="/images/favicon.ico">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <main class="main">
+    
+	<header id="header" class="header">
+
+	<div class="container">
+		<nav class="navbar d-flex align-items-center">
+			<a class="brand" href="/">
+				<img class="logo lazyload" data-src="/images/logo.png" alt="敏思信息" role="img">
+			</a>
+			<ul class="main-nav">
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/">首页</a>
+  </li>
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/stories">案例</a>
+  </li>
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/archives">新闻</a>
+  </li>
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/about">关于</a>
+  </li>
+  
+</ul>
+		</nav>
+		<a id="mobile-nav-toggle">
+			<span class="mobile-nav-toggle-bar"></span>
+			<span class="mobile-nav-toggle-bar"></span>
+			<span class="mobile-nav-toggle-bar"></span>
+		</a>
+	</div>
+</header>
+
+    <section>
+      <div class="container">
+  <article id="post-suricata_databases" class="article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+  
+  <div class="article-cover mb-5">
+    
+  
+    
+      <img class="article-cover-img lazyload" data-src="/images/sample/mydesk.png" itemprop="image">
+    
+  
+
+  </div>
+  
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+      
+  
+    <h1 class="article-title" itemprop="name">
+      基于 Suricata 的数据库流量审计系统设计与实践
+    </h1>
+  
+
+      <div class="article-meta">
+        <time class="text-gray" datetime="2025-04-29T04:00:00.000Z" itemprop="datePublished">
+  2025-04-29
+</time>
+        
+      </div>
+      
+    </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>在企业级网络安全架构中，数据库作为核心资产常常成为攻击者的主要目标。为了实现对数据库访问行为的全面监控和异常检测，本文提出了一种基于 <strong>Suricata</strong> 的 <strong>非侵入式数据库流量审计方案</strong>。通过旁路抓包 + Suricata 规则匹配的方式，实现对数据库协议（如 MySQL、MSSQL、PostgreSQL）的实时解析与行为分析，无需修改业务逻辑或部署探针。<br>该方案具备良好的扩展性与灵活性，适用于日志留存、行为溯源、合规审计等场景，是提升数据库安全防护能力的有效手段。</p>
+<span id="more"></span>
+
+<hr>
+<h2 id="一、背景与需求"><a href="#一、背景与需求" class="headerlink" title="一、背景与需求"></a>一、背景与需求</h2><p>随着数据安全法规（如《个人信息保护法》《数据安全法》）的逐步落地，企业对数据库访问行为的可审计性提出了更高要求：</p>
+<ul>
+<li>需要记录谁（账号&#x2F;用户）在什么时间做了哪些操作；</li>
+<li>需要识别高危 SQL 操作（如 <code>DROP</code>、<code>DELETE</code>、<code>UNION SELECT</code> 等）；</li>
+<li>需要发现异常登录行为（大量失败尝试、非常用IP等）；</li>
+<li>对接 SIEM 平台进行统一告警与可视化。</li>
+</ul>
+<p>传统方式通常依赖数据库自身的日志功能，但存在两个问题：</p>
+<ol>
+<li>日志格式复杂、难以集中分析；</li>
+<li>若数据库被提权控制，自身日志也可能被篡改或关闭。</li>
+</ol>
+<p>因此，引入一种<strong>独立于数据库本身的审计机制</strong>变得尤为重要。</p>
+<hr>
+<h2 id="二、系统架构设计"><a href="#二、系统架构设计" class="headerlink" title="二、系统架构设计"></a>二、系统架构设计</h2><p>本系统采用“流量镜像 + Suricata 解析 + ELK 可视化”三层架构，结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[数据库服务器] --- 镜像流量 ---&gt; [采集服务器] --- Suricata 解析 ---&gt; [Elasticsearch 存储]</span><br><span class="line">                                                         ↓</span><br><span class="line">                                                 [Logstash/Kafka 处理]</span><br><span class="line">                                                         ↓</span><br><span class="line">                                                  [Kibana 可视化]</span><br></pre></td></tr></table></figure>
+
+<h3 id="各层说明："><a href="#各层说明：" class="headerlink" title="各层说明："></a>各层说明：</h3><table>
+<thead>
+<tr>
+<th>层级</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>流量采集层</td>
+<td>通过交换机端口镜像获取数据库通信流量</td>
+</tr>
+<tr>
+<td>协议解析层</td>
+<td>使用 Suricata 对流量进行深度解析，提取 SQL 语句、用户信息、客户端 IP 等字段</td>
+</tr>
+<tr>
+<td>数据存储层</td>
+<td>将结构化数据写入 Elasticsearch，便于搜索与分析</td>
+</tr>
+<tr>
+<td>安全分析层</td>
+<td>利用 Kibana 构建仪表盘，结合规则触发告警</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、关键技术点"><a href="#三、关键技术点" class="headerlink" title="三、关键技术点"></a>三、关键技术点</h2><h3 id="3-1-Suricata-支持数据库协议解析"><a href="#3-1-Suricata-支持数据库协议解析" class="headerlink" title="3.1 Suricata 支持数据库协议解析"></a>3.1 Suricata 支持数据库协议解析</h3><p>Suricata 不仅是一个强大的 IDS&#x2F;IPS 工具，还内置了多种应用层协议解析器，其中包括：</p>
+<ul>
+<li>MySQL 协议解析：支持登录认证、查询请求、响应内容等字段提取；</li>
+<li>PostgreSQL 协议解析；</li>
+<li>MSSQL 协议解析；</li>
+</ul>
+<p>这些协议解析结果可以通过 <code>eve.json</code> 输出为 JSON 格式，供后续分析使用。</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 示例：suricata.yaml 相关配置</span></span><br><span class="line"><span class="attr">outputs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">eve-log:</span></span><br><span class="line">      <span class="attr">enabled:</span> <span class="literal">yes</span></span><br><span class="line">      <span class="attr">filetype:</span> <span class="string">regular</span></span><br><span class="line">      <span class="attr">filename:</span> <span class="string">/var/log/suricata/eve.json</span></span><br><span class="line">      <span class="attr">types:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">flow</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">alert</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">http</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">mysql</span></span><br></pre></td></tr></table></figure>
+
+<p>⚠️ 注意：确保 Suricata 编译时启用了 <code>--enable-mysql --enable-postgresql</code> 等选项。</p>
+<h3 id="3-2-Logstash-自定义解析插件"><a href="#3-2-Logstash-自定义解析插件" class="headerlink" title="3.2 Logstash 自定义解析插件"></a>3.2 Logstash 自定义解析插件</h3><p>由于 Suricata 输出的 <code>mysql.query</code> 字段可能包含完整的 SQL 语句，我们需要将其拆分为更细粒度的信息，例如：</p>
+<ul>
+<li>用户名；</li>
+<li>客户端 IP；</li>
+<li>查询类型（SELECT, INSERT, DELETE 等）；</li>
+<li>涉及表名；</li>
+<li>是否含敏感词（如 <code>DROP</code>, <code>UNION</code>, <code>--</code>）等。</li>
+</ul>
+<p>通过 Logstash 插件处理后，数据结构化更强，也更利于后续分析。</p>
+<h3 id="3-3-Kibana-构建可视化看板"><a href="#3-3-Kibana-构建可视化看板" class="headerlink" title="3.3 Kibana 构建可视化看板"></a>3.3 Kibana 构建可视化看板</h3><p>Kibana 提供了丰富的图表组件，可构建如下关键面板：</p>
+<ul>
+<li>实时 SQL 请求趋势图；</li>
+<li>每分钟登录失败次数统计；</li>
+<li>高危 SQL 操作 Top N；</li>
+<li>访问来源 IP 地址分布；</li>
+<li>用户操作历史追踪。</li>
+</ul>
+<hr>
+<h2 id="四、典型应用场景"><a href="#四、典型应用场景" class="headerlink" title="四、典型应用场景"></a>四、典型应用场景</h2><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>应用描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>行为审计</td>
+<td>查看某用户执行的所有 SQL 语句，判断是否存在异常行为</td>
+</tr>
+<tr>
+<td>安全告警</td>
+<td>发现非法 SQL 注入、批量删除、权限变更等行为并告警</td>
+</tr>
+<tr>
+<td>权限复核</td>
+<td>分析数据库实际使用情况，优化账户权限分配</td>
+</tr>
+<tr>
+<td>合规检查</td>
+<td>输出数据库访问日志，满足等级保护、ISO27001 等合规要求</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、优势与挑战"><a href="#五、优势与挑战" class="headerlink" title="五、优势与挑战"></a>五、优势与挑战</h2><h3 id="✅-优势："><a href="#✅-优势：" class="headerlink" title="✅ 优势："></a>✅ 优势：</h3><ul>
+<li><strong>非侵入式</strong>：不需安装代理程序，不影响现有服务；</li>
+<li><strong>多协议支持</strong>：Oracle、MySQL、PostgreSQL、MSSQL 等主流数据库均支持；</li>
+<li><strong>实时性强</strong>：毫秒级捕获数据库访问行为；</li>
+<li><strong>易于扩展</strong>：可对接 SOAR、SIEM、SOC 等平台。</li>
+</ul>
+<h3 id="⚠️-挑战："><a href="#⚠️-挑战：" class="headerlink" title="⚠️ 挑战："></a>⚠️ 挑战：</h3><ul>
+<li><strong>性能开销大</strong>：需要高性能网卡 + 多线程 Suricata 部署；</li>
+<li><strong>协议兼容性</strong>：某些私有协议或加密连接无法解析；</li>
+<li><strong>数据隐私风险</strong>：SQL 中可能包含敏感数据，需做好脱敏与权限控制。</li>
+</ul>
+<hr>
+<h2 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a>六、总结</h2><p>借助 Suricata 的强大协议解析能力，我们实现了一个轻量、高效、灵活的数据库流量审计系统。该系统不仅可以帮助企业满足监管合规要求，还能有效提升数据库安全防御能力。</p>
+<p>未来可进一步整合 AI 分析模型，实现智能化威胁感知与自动化响应，打造更完善的数据库安全审计闭环体系。</p>
+<hr>
+<h2 id="七、参考资料"><a href="#七、参考资料" class="headerlink" title="七、参考资料"></a>七、参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://suricata.io/docs/">Suricata Official Documentation</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.elastic.co/elk-stack">Elastic Stack (ELK) 官方文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://dev.mysql.com/worklog/task/?id=2694">MySQL Protocol Reference</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/OISF/suricata">Suricata GitHub 仓库</a></li>
+</ul>
+<hr>
+
+    </div>
+    <footer class="article-footer">
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/suricata-%E6%95%B0%E5%AE%A1/" rel="tag">suricata, 数审</a></li></ul>
+
+    </footer>
+  </div>
+  
+  
+    
+<nav class="article-nav pt-4 mt-3" id="article-nav">
+  
+  
+    <a href="/2025/04/29/libevent_tcp_tls/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">基于libevent的tcp/ip tls加密的代理服务器</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+</div>
+    </section>
+    <footer class="footer pt-5 mt-5">
+  <div class="container">
+    <div class="py-3">
+      <div class="row justify-content-between">
+        <div class="col-6">
+          <img class="filter-gray mb-3 lazyload" height="40" data-src="/images/logo.png" alt="敏思信息" role="img">
+          <p class="mb-4">敏思信息</p>
+          <ul class="list-inline">
+            
+              <li class="list-inline-item">
+                <a href="javascript:;">
+                  <img 0="微博" src="/images/icons/contact_weibo.svg">
+                </a>
+              </li>
+            
+              <li class="list-inline-item">
+                <a href="javascript:;">
+                  <img 0="微信" src="/images/icons/contact_wechat.svg">
+                </a>
+              </li>
+            
+              <li class="list-inline-item">
+                <a href="mailto:wang@mins.app">
+                  <img 0="邮箱" src="/images/icons/contact_email.svg">
+                </a>
+              </li>
+            
+          </ul>
+        </div>
+        <div class="col-4">
+          <h5>友情链接</h5>
+          <ul class="list-inline">
+            
+              <li class="list-inline-item">
+                <a href="https://www.mins.pro/" title="Minspro" target="_blank" rel="noopener">Minspro</a>
+              </li>
+            
+              <li class="list-inline-item">
+                <a href="https://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a>
+              </li>
+            
+              <li class="list-inline-item">
+                <a href="https://github.com/" title="GitHub" target="_blank" rel="noopener">GitHub</a>
+              </li>
+            
+          </ul>
+        </div>
+      </div>
+    </div>
+    <hr class="hr" style="opacity: .25;">
+    <div class="pt-3 pb-5">
+      <ul class="list-inline mb-0 text-center">
+        <li class="list-inline-item">&copy; 2025 敏思信息</li>
+        
+        <li class="list-inline-item">Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+        <li class="list-inline-item">Designer <a href="https://www.mins.pro/" target="_blank">Minspro</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  </main>
+  <div id="mobile-nav-dimmer"></div>
+<div id="mobile-nav">
+	<div id="mobile-nav-inner">
+		<ul class="mobile-nav">
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/">首页</a>
+  </li>
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/stories">案例</a>
+  </li>
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/archives">新闻</a>
+  </li>
+  
+    
+  <li class="nav-item ">
+    <a class="nav-item-link" href="/about">关于</a>
+  </li>
+  
+</ul>
+		
+	</div>
+</div>
+
+  <script src="/libs/feather/feather.min.js"></script>
+<script src="/libs/lazysizes/lazysizes.min.js"></script>
+
+	<script src="/libs/tocbot/tocbot.min.js"></script>
+	<script>
+    tocbot.init({
+      // Where to render the table of contents.
+      tocSelector: '.js-toc',
+      // Where to grab the headings to build the table of contents.
+      contentSelector: '.js-toc-content',
+      // Which headings to grab inside of the contentSelector element.
+      headingSelector: 'h2, h3',
+      // For headings inside relative or absolute positioned containers within content.
+      hasInnerContainers: true,
+    });
+	</script>
+
+
+
+
+
+<script src="/js/mobile-nav.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+</body>
+</html>
